@@ -1,0 +1,14 @@
+#Fat Jar Configuration File
+#Sat Mar 31 19:49:31 GMT-03:00 2012
+onejar.license.required=true
+manifest.classpath=
+manifest.removesigners=true
+onejar.checkbox=false
+jarname=J\:\\EclipseWorkspace\\VejaGolCollector\\VejaGolCollector.jar
+manifest.mergeall=true
+manifest.mainclass=com.vejagol.collector.VejaGolCollector
+manifest.file=<createnew>
+jarname.isextern=true
+onejar.expand=
+excludes=
+includes=
