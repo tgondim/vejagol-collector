@@ -5,7 +5,9 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -25,6 +27,7 @@ import com.gargoylesoftware.htmlunit.html.DomNodeList;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlBody;
 import com.gargoylesoftware.htmlunit.html.HtmlDivision;
+import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.vejagol.controller.CadastroJogo;
 import com.vejagol.model.Jogo;
@@ -35,7 +38,7 @@ public class VejaGolCollector extends HttpServlet {
 	private static final long serialVersionUID = -8770144871741483858L;
 	private static final int MAX_REPETICOES = 3;
 	private static final int MAX_EXCESSOES = 3;	
-	private static final long INTERVALO_ATUALIZACAO = (1000 * 60 * 30);
+	private static final long INTERVALO_ATUALIZACAO = (1000 * 60 * 15);
 	
 	private long intervaloAtualizacao;
 	private Timer timer;
@@ -99,7 +102,7 @@ public class VejaGolCollector extends HttpServlet {
 			HtmlDivision divPrincipal;
 			HtmlDivision divJogo;
 			
-			HtmlAnchor aJogo;	   	
+//			HtmlAnchor aJogo;	   	
 			
 			LogFactory.getFactory().setAttribute("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.NoOpLog"); 
 			
@@ -153,26 +156,40 @@ public class VejaGolCollector extends HttpServlet {
 						paginaPrincipal = (HtmlPage) webClient.getPage(toNavigateUrl);
 						
 						bodyPrincipal = (HtmlBody)paginaPrincipal.getBody();
-						divPrincipal = bodyPrincipal.getElementById("content");
+//						divPrincipal = bodyPrincipal.getElementById("content");
 						
-						listaDivs = divPrincipal.getElementsByTagName("div");        		
+						Iterable<HtmlElement> list = bodyPrincipal.getElementsByTagName("div");   
+						List<HtmlAnchor> listaJogosA = new ArrayList<HtmlAnchor>();
+						String classe;
+						for (HtmlElement html : list) {
+							if ((classe = html.getAttribute("class")) != null) {
+								if (classe.equals("listajogos")) {
+									listaJogosA.add((HtmlAnchor)html.getFirstChild());
+								}
+							}
+						}
+//						listaDivs = bodyPrincipal.getElementsByTagName("div");        		
 						
-						if (listaDivs.size() < 30) {
+						if (listaJogosA.size() < 30) {
 							hasMorePages = false;
 						}
 						
-						for (int index = 1; index < listaDivs.size(); index++) {
+//						for (int index = 1; index < listaJogosA.size(); index++) {
+						for (HtmlAnchor aJogo : listaJogosA) {
 							
-							divJogo = (HtmlDivision)listaDivs.get(index-1);            	
+//							divJogo = (HtmlDivision)listaDivs.get(index-1);            	
 							
-							aJogo = (HtmlAnchor)divJogo.getFirstChild();
+//							aJogo = (HtmlAnchor)divJogo.getFirstChild();
 							
 							paginaJogo = (HtmlPage) webClient.getPage(url + aJogo.getHrefAttribute());
 							excessoes = 0;
-							String htmlText = paginaJogo.getWebResponse().getContentAsString();        			
+							String htmlText = paginaJogo.getWebResponse().getContentAsString();        		
 							
 //	        				Pattern descricaoRegex = Pattern.compile("(Match:\\s*)((18|19|20|21)\\d{2}).(0[1-9]|[1][012]).(0[1-9]|[12][0-9]|3[01])\\s*(\\(\\d{2}h\\d{2}\\))\\s*-\\s*([a-zA-Z 0-9-./çÇ&;]*)\\s*(\\d{1}|\\d{2})-(\\d{1}|\\d{2})\\s*(\\([a-zA-Z 0-9-./çÇ&;]*\\))*([a-zA-Z 0-9-./çÇ&;]*)\\s*(\\([a-zA-Z 0-9-./çÇ&;]*\\))*\\s*(- League:)\\s*([a-zA-Z 0-9]*)", Pattern.CASE_INSENSITIVE);
-							Pattern descricaoRegex = Pattern.compile("(Match:\\s*)((18|19|20|21)\\d{2}).(0[1-9]|[1][012]).(0[1-9]|[12][0-9]|3[01])\\s*(\\(\\d{2}h\\d{2}\\))\\s*-\\s*([a-zA-Z 0-9-./çÇ&üö;]*)\\s*(\\d{1}|\\d{2})-(\\d{1}|\\d{2})\\s*(\\([a-zA-Z 0-9-./çÇ&üö;]*\\))*([a-zA-Z 0-9-./çÇ&üö;]*)\\s*(\\([a-zA-Z 0-9-./çÇ&öü;]*\\))*\\s*(\\([a-zA-Z 0-9-./çÇ&üö;]*\\))*\\s*(- League:)\\s*([a-zA-Z 0-9]*)", Pattern.CASE_INSENSITIVE);
+							//(Match:\s*)((18|19|20|21)\d{2}).(0[1-9]|[1][012]).(0[1-9]|[12][0-9]|3[01])\s*(\(\d{2}h\d{2}\))\s*-\s*([a-zA-Z 0-9-./çÇ&üö;]*)\s*(\d{1}|\d{2})-(\d{1}|\d{2})\s*(\([a-zA-Z 0-9-./çÇ&üö;]*\))*([a-zA-Z 0-9-./çÇ&üö;]*)\s*(\([a-zA-Z 0-9-./çÇ&öü;]*\))*\s*(\([a-zA-Z 0-9-./çÇ&üö;]*\))*\s*(- League:)\s*([a-zA-Z 0-9]*)
+							//Pattern descricaoRegex = Pattern.compile("(Match:\\s*)((18|19|20|21)\\d{2}).(0[1-9]|[1][012]).(0[1-9]|[12][0-9]|3[01])\\s*(\\(\\d{2}h\\d{2}\\))\\s*-\\s*([a-zA-Z 0-9-./çÇ&üö;]*)\\s*(\\d{1}|\\d{2})-(\\d{1}|\\d{2})\\s*(\\([a-zA-Z 0-9-./çÇ&üö;]*\\))*([a-zA-Z 0-9-./çÇ&üö;]*)\\s*(\\([a-zA-Z 0-9-./çÇ&öü;]*\\))*\\s*(\\([a-zA-Z 0-9-./çÇ&üö;]*\\))*\\s*(- League:)\\s*([a-zA-Z 0-9]*)", Pattern.CASE_INSENSITIVE);
+							Pattern descricaoRegex = Pattern.compile("((18|19|20|21)\\d{2}).(0[1-9]|[1][012]).(0[1-9]|[12][0-9]|3[01])\\s*(\\(\\d{2}h\\d{2}\\))\\s*-\\s*([a-zA-Z 0-9-./çÇ&üö;]*)\\s*(\\d{1}|\\d{2})-(\\d{1}|\\d{2})\\s*(\\([a-zA-Z 0-9-./çÇ&üö;]*\\))*([a-zA-Z 0-9-./çÇ&üö;]*)\\s*(\\([a-zA-Z 0-9-./çÇ&öü;]*\\))*\\s*(\\([a-zA-Z 0-9-./çÇ&üö;]*\\))*\\s*(- League:)*\\s*([a-zA-Z 0-9]*)", Pattern.CASE_INSENSITIVE);
+							Pattern ligaRegex = Pattern.compile("alt=\"(\\w*) icon\"");
 							Pattern youtubeLinkRegex = Pattern.compile("(http:\\/\\/w{0,3}\\.youtube[^' '\"]+)");
 							Pattern dailymotionLinkRegex = Pattern.compile("(ht|f)tp:\\/\\/w{0,3}.dailymotion[a-zA-Z0-9_\\-.:#/~}]+");
 							Pattern videaLinkRegex = Pattern.compile("(http://videa.hu/[\\w.?=]*)");
@@ -182,6 +199,7 @@ public class VejaGolCollector extends HttpServlet {
 							Pattern yandexLinkRegex = Pattern.compile("(http://static.video.yandex.ru/[\\w.:/?=,]*)");
 							
 							Matcher descricaoMatcher = descricaoRegex.matcher(htmlText);
+							Matcher ligaMatcher = ligaRegex.matcher(htmlText);
 							Matcher youtubeLinkMatcher = youtubeLinkRegex.matcher(htmlText);
 							Matcher dailymotionLinkMatcher = dailymotionLinkRegex.matcher(htmlText);
 							Matcher videaLinkMatcher = videaLinkRegex.matcher(htmlText);
@@ -191,36 +209,40 @@ public class VejaGolCollector extends HttpServlet {
 							Matcher yandexLinkMatcher = yandexLinkRegex.matcher(htmlText);
 							
 							jogo = new Jogo();
+							descricaoMatcher.find();
 							
 							if (descricaoMatcher.find()) {
-								log("VejaGolCollector.log", divJogo.getTextContent());
+								log("VejaGolCollector.log", aJogo.getTextContent());
 								if (descricaoMatcher.find()) {
 									Calendar newData = Calendar.getInstance();
-									newData.set(Integer.valueOf(descricaoMatcher.group(2)), 
-											Integer.valueOf(descricaoMatcher.group(4))-1, 
-											Integer.valueOf(descricaoMatcher.group(5)),
-											Integer.valueOf(descricaoMatcher.group(6).substring(1, 3)),
-											Integer.valueOf(descricaoMatcher.group(6).substring(4, 6)));
+									newData.set(Integer.valueOf(descricaoMatcher.group(1)), 
+											Integer.valueOf(descricaoMatcher.group(3))-1, 
+											Integer.valueOf(descricaoMatcher.group(4)),
+											Integer.valueOf(descricaoMatcher.group(5).substring(1, 3)),
+											Integer.valueOf(descricaoMatcher.group(5).substring(4, 6)));
 									
 									newData.set(Calendar.SECOND, 0);
 									newData.set(Calendar.MILLISECOND, 0);
 									
 									jogo.setData(newData);
 									
-									jogo.setTimeCasa(descricaoMatcher.group(7) != null ? StringUtils.unescapeHTML(descricaoMatcher.group(7).trim()) : "");
-									jogo.setTimeVisitante(descricaoMatcher.group(11) != null ? StringUtils.unescapeHTML(descricaoMatcher.group(11).trim()) : "");
-									jogo.setPlacarCasa(Integer.valueOf(descricaoMatcher.group(8) != null ? descricaoMatcher.group(8) : "0"));
-									jogo.setPlacarVisitante(Integer.valueOf(descricaoMatcher.group(9) != null ? descricaoMatcher.group(9) : "0"));
+									jogo.setTimeCasa(descricaoMatcher.group(6) != null ? StringUtils.unescapeHTML(descricaoMatcher.group(6).trim()) : "");
+									jogo.setTimeVisitante(descricaoMatcher.group(10) != null ? StringUtils.unescapeHTML(descricaoMatcher.group(10).trim()) : "");
+									jogo.setPlacarCasa(Integer.valueOf(descricaoMatcher.group(7) != null ? descricaoMatcher.group(7) : "0"));
+									jogo.setPlacarVisitante(Integer.valueOf(descricaoMatcher.group(8) != null ? descricaoMatcher.group(8) : "0"));
 									
 									int camp;
-									if (descricaoMatcher.group(13) == null) {
-										camp = 12;
+									if (descricaoMatcher.group(12) == null) {
+										camp = 11;
 									} else {
-										camp = 13;
+										camp = 12;
 									}
 									
-									jogo.setCampeonato(descricaoMatcher.group(camp) != null ? StringUtils.unescapeHTML(descricaoMatcher.group(camp).trim().substring(1, descricaoMatcher.group(12).trim().length()-1)) : "");
-									jogo.setLiga(descricaoMatcher.group(15) != null ? StringUtils.unescapeHTML(descricaoMatcher.group(15).trim()) : "");
+									jogo.setCampeonato(descricaoMatcher.group(camp) != null ? StringUtils.unescapeHTML(descricaoMatcher.group(camp).trim().substring(1, descricaoMatcher.group(11).trim().length()-1)) : "");
+									if (ligaMatcher.find()) {										
+										//jogo.setLiga(descricaoMatcher.group(14) != null ? StringUtils.unescapeHTML(descricaoMatcher.group(14).trim()) : "");
+										jogo.setLiga(ligaMatcher.group(1));
+									}
 								}
 							}
 							
