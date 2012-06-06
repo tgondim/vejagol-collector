@@ -2,9 +2,7 @@ package com.vejagol.collector;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -19,14 +17,13 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.DomNodeList;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlBody;
-import com.gargoylesoftware.htmlunit.html.HtmlDivision;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.vejagol.controller.CadastroJogo;
@@ -42,9 +39,11 @@ public class VejaGolCollector extends HttpServlet {
 	
 	private long intervaloAtualizacao;
 	private Timer timer;
+
+	static Log log = LogFactory.getLog(VejaGolCollector.class);
 	
-    @SuppressWarnings("rawtypes")
-	static private DomNodeList listaDivs;
+//    @SuppressWarnings("rawtypes")
+//	static private DomNodeList listaDivs;
     
     public VejaGolCollector() {
     	this.intervaloAtualizacao = INTERVALO_ATUALIZACAO;
@@ -57,24 +56,24 @@ public class VejaGolCollector extends HttpServlet {
 		vejagolColector.new CollectorTimerTask().run();
 	}
 	
-	private static void log(String fileName, String info){
-
-        String addInfo;
-        String DATE_FORMAT_NOW = "yyyy-MM-dd HH:mm:ss";
-
-        Calendar cal = Calendar.getInstance();
-        SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT_NOW);
-        addInfo = sdf.format(cal.getTime());
-        System.out.println(addInfo + " - " + info);
-        FileWriter fw;
-		try {
-			fw = new FileWriter(new File(fileName), true);
-			fw.write(info);
-			fw.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-    }
+//	private static void log(String fileName, String info){
+//
+//        String addInfo;
+//        String DATE_FORMAT_NOW = "yyyy-MM-dd HH:mm:ss";
+//
+//        Calendar cal = Calendar.getInstance();
+//        SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT_NOW);
+//        addInfo = sdf.format(cal.getTime());
+//        System.out.println(addInfo + " - " + info);
+//        FileWriter fw;
+//		try {
+//			fw = new FileWriter(new File(fileName), true);
+//			fw.write(info);
+//			fw.close();
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+//    }
 	
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -99,12 +98,12 @@ public class VejaGolCollector extends HttpServlet {
 			
 			HtmlBody bodyPrincipal;
 			
-			HtmlDivision divPrincipal;
-			HtmlDivision divJogo;
+//			HtmlDivision divPrincipal;
+//			HtmlDivision divJogo;
 			
 //			HtmlAnchor aJogo;	   	
 			
-			LogFactory.getFactory().setAttribute("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.NoOpLog"); 
+			
 			
 			String url = "http://www.tvgolo.com/football.php";
 			
@@ -143,7 +142,7 @@ public class VejaGolCollector extends HttpServlet {
 			
 			while (excessoes < maxExececoes) {
 				try {
-					log("VejaGolCollector.log", "Initializing VejaGolTests");
+					log.info("Initializing VejaGolTests");
 					webClient = new WebClient(BrowserVersion.FIREFOX_3_6);
 					webClient.setJavaScriptEnabled(false);
 					webClient.setCssEnabled(true);        	
@@ -152,7 +151,7 @@ public class VejaGolCollector extends HttpServlet {
 					while (hasMorePages) {        		        		
 						
 						toNavigateUrl = url + "?start_from=" + j + "&ucat=&archive=&subaction=&id=&";
-						log("VejaGolCollector.log", "toNavigateUrl=" + toNavigateUrl);
+						log.info("toNavigateUrl=" + toNavigateUrl);
 						paginaPrincipal = (HtmlPage) webClient.getPage(toNavigateUrl);
 						
 						bodyPrincipal = (HtmlBody)paginaPrincipal.getBody();
@@ -189,7 +188,7 @@ public class VejaGolCollector extends HttpServlet {
 							//(Match:\s*)((18|19|20|21)\d{2}).(0[1-9]|[1][012]).(0[1-9]|[12][0-9]|3[01])\s*(\(\d{2}h\d{2}\))\s*-\s*([a-zA-Z 0-9-./çÇ&üö;]*)\s*(\d{1}|\d{2})-(\d{1}|\d{2})\s*(\([a-zA-Z 0-9-./çÇ&üö;]*\))*([a-zA-Z 0-9-./çÇ&üö;]*)\s*(\([a-zA-Z 0-9-./çÇ&öü;]*\))*\s*(\([a-zA-Z 0-9-./çÇ&üö;]*\))*\s*(- League:)\s*([a-zA-Z 0-9]*)
 							//Pattern descricaoRegex = Pattern.compile("(Match:\\s*)((18|19|20|21)\\d{2}).(0[1-9]|[1][012]).(0[1-9]|[12][0-9]|3[01])\\s*(\\(\\d{2}h\\d{2}\\))\\s*-\\s*([a-zA-Z 0-9-./çÇ&üö;]*)\\s*(\\d{1}|\\d{2})-(\\d{1}|\\d{2})\\s*(\\([a-zA-Z 0-9-./çÇ&üö;]*\\))*([a-zA-Z 0-9-./çÇ&üö;]*)\\s*(\\([a-zA-Z 0-9-./çÇ&öü;]*\\))*\\s*(\\([a-zA-Z 0-9-./çÇ&üö;]*\\))*\\s*(- League:)\\s*([a-zA-Z 0-9]*)", Pattern.CASE_INSENSITIVE);
 							Pattern descricaoRegex = Pattern.compile("((18|19|20|21)\\d{2}).(0[1-9]|[1][012]).(0[1-9]|[12][0-9]|3[01])\\s*(\\(\\d{2}h\\d{2}\\))\\s*-\\s*([a-zA-Z 0-9-./çÇ&üö;]*)\\s*(\\d{1}|\\d{2})-(\\d{1}|\\d{2})\\s*(\\([a-zA-Z 0-9-./çÇ&üö;]*\\))*([a-zA-Z 0-9-./çÇ&üö;]*)\\s*(\\([a-zA-Z 0-9-./çÇ&öü;]*\\))*\\s*(\\([a-zA-Z 0-9-./çÇ&üö;]*\\))*\\s*(- League:)*\\s*([a-zA-Z 0-9]*)", Pattern.CASE_INSENSITIVE);
-							Pattern ligaRegex = Pattern.compile("alt=\"(\\w*) icon\"");
+							Pattern ligaRegex = Pattern.compile("alt=\"(\\w*\\s*\\w*) icon\"");
 							Pattern youtubeLinkRegex = Pattern.compile("(http:\\/\\/w{0,3}\\.youtube[^' '\"]+)");
 							Pattern dailymotionLinkRegex = Pattern.compile("(ht|f)tp:\\/\\/w{0,3}.dailymotion[a-zA-Z0-9_\\-.:#/~}]+");
 							Pattern videaLinkRegex = Pattern.compile("(http://videa.hu/[\\w.?=]*)");
@@ -212,7 +211,7 @@ public class VejaGolCollector extends HttpServlet {
 							descricaoMatcher.find();
 							
 							if (descricaoMatcher.find()) {
-								log("VejaGolCollector.log", aJogo.getTextContent());
+								log.info(aJogo.getTextContent());
 								if (descricaoMatcher.find()) {
 									Calendar newData = Calendar.getInstance();
 									newData.set(Integer.valueOf(descricaoMatcher.group(1)), 
@@ -259,32 +258,32 @@ public class VejaGolCollector extends HttpServlet {
 									youtubeLink = auxLink;
 								}
 								
-								log("VejaGolCollector.log", youtubeLink);
+								log.info(youtubeLink);
 								jogo.setLink(youtubeLink);
 							} else if (dailymotionLinkMatcher.find()) {
-								log("VejaGolCollector.log", dailymotionLinkMatcher.group() != null ? dailymotionLinkMatcher.group().trim() : "");
+								log.info(dailymotionLinkMatcher.group() != null ? dailymotionLinkMatcher.group().trim() : "");
 								jogo.setLink(dailymotionLinkMatcher.group() != null ? dailymotionLinkMatcher.group().trim() : "");
 							} else if (videaLinkMatcher.find()) {
-								log("VejaGolCollector.log", videaLinkMatcher.group() != null ? videaLinkMatcher.group().trim() : "");
+								log.info(videaLinkMatcher.group() != null ? videaLinkMatcher.group().trim() : "");
 								jogo.setLink(videaLinkMatcher.group() != null ? videaLinkMatcher.group().trim() : "");
 							} else if (rutubeLinkMatcher.find()) {
-								log("VejaGolCollector.log", rutubeLinkMatcher.group() != null ? rutubeLinkMatcher.group().trim() : "");
+								log.info(rutubeLinkMatcher.group() != null ? rutubeLinkMatcher.group().trim() : "");
 								jogo.setLink(rutubeLinkMatcher.group() != null ? rutubeLinkMatcher.group().trim() : "");
 							} else if (sapoLinkMatcher.find()) {
-								log("VejaGolCollector.log", sapoLinkMatcher.group() != null ? sapoLinkMatcher.group().trim() : "");
+								log.info(sapoLinkMatcher.group() != null ? sapoLinkMatcher.group().trim() : "");
 								jogo.setLink(sapoLinkMatcher.group() != null ? sapoLinkMatcher.group().trim() : "");
 							} else if (mediaservicesLinkMatcher.find()) {
-								log("VejaGolCollector.log", mediaservicesLinkMatcher.group() != null ? mediaservicesLinkMatcher.group().trim() : "");
+								log.info(mediaservicesLinkMatcher.group() != null ? mediaservicesLinkMatcher.group().trim() : "");
 								jogo.setLink(mediaservicesLinkMatcher.group() != null ? mediaservicesLinkMatcher.group().trim() : "");
 							} else if (yandexLinkMatcher.find()) {
-								log("VejaGolCollector.log", yandexLinkMatcher.group() != null ? yandexLinkMatcher.group().trim() : "");
+								log.info(yandexLinkMatcher.group() != null ? yandexLinkMatcher.group().trim() : "");
 								jogo.setLink(yandexLinkMatcher.group() != null ? yandexLinkMatcher.group().trim() : "");
 							}
 							if ((jogo.getData() == null) || (jogo.getTimeCasa() == null) || (jogo.getTimeVisitante() == null)) {
-								log("NaoInseridos.log", "Este jogo nao foi inserido. Validar manualmente. link=" + jogo.getLink() + "\n");
+								log.info("Este jogo nao foi inserido. Validar manualmente. link=" + jogo.getLink() + "\n");
 							} else {
 								if (jogo.getLink() == null) {
-									log("LinkComProblema.log", "Este jogo nao foi inserido. Validar manualmente. data=" + jogo.getData() + " timeCasa=" + jogo.getTimeCasa() + " timeVisitante=" + jogo.getTimeVisitante() + "\n");
+									log.info("Este jogo nao foi inserido. Validar manualmente. data=" + jogo.getData() + " timeCasa=" + jogo.getTimeCasa() + " timeVisitante=" + jogo.getTimeVisitante() + "\n");
 								}
 								if (!cadastroJogo.adicionar(jogo)) {
 									jogosEncontrados++;        				
@@ -293,13 +292,13 @@ public class VejaGolCollector extends HttpServlet {
 								}
 							}
 							if (jogosEncontrados > maxRepeticoesJogos) {
-								log("VejaGolCollector.log", maxRepeticoesJogos + " jogos repetidos encontrados. Abortando atualizacao.");
+								log.info(maxRepeticoesJogos + " jogos repetidos encontrados. Abortando atualizacao.");
 								return;
 							}
 						}
 						j += 29;
 					}
-					log("VejaGolCollector.log", "\n\n...done!\n");
+					log.info("\n\n...done!\n");
 				} catch (Exception e) {
 					excessoes++;
 					e.printStackTrace();
